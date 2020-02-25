@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "383632562443",
+    "firebase_url": "https://memtrax-2020.firebaseio.com",
+    "project_id": "memtrax-2020",
+    "storage_bucket": "memtrax-2020.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:383632562443:android:62286fdc2c24157e4eea0e",
+        "android_client_info": {
+          "package_name": "com.memtrax.test"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "383632562443-fklsikjgjhlv7f1820covg9s2ijnmur6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbVaROEjUTCAYFIapoCJW8fOO8EjgxJuA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "383632562443-fklsikjgjhlv7f1820covg9s2ijnmur6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
