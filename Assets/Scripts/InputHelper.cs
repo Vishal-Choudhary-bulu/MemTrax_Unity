@@ -5,19 +5,27 @@ public class InputHelper : MonoBehaviour
 {
 
     [SerializeField]
-    private TMP_InputField emailField;
+    private TMP_InputField emailField = null;
 
     [SerializeField]
-    private TMP_InputField passField;
+    private TMP_InputField passField = null;
+
+    [SerializeField]
+    private TMP_InputField usernameField = null;
 
     private string email;
     private string password;
+    private string username;
 
     void Start()
     {
         if(passField == null || emailField == null)
         {
             Debug.Log("Input fields not assigned properly");
+        }
+        if(usernameField == null)
+        {
+            //this is for login
         }
     }
 
@@ -45,5 +53,11 @@ public class InputHelper : MonoBehaviour
     {
         email = emailField.text;
         CurrentUser.thisUser.user.email = email;
+    }
+
+    public void UpdateUserName()
+    {
+        username = usernameField.text;
+        CurrentUser.thisUser.user.username = username;
     }
 }

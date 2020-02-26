@@ -6,6 +6,13 @@ public class CurrentUser : MonoBehaviour
 
     public User user;
 
+    [HideInInspector]
+    public bool LoggedIn = false;
+
+    public GameObject loginPanel;
+    public GameObject signupPanel;
+
+
     private void Awake()
     {
         if(thisUser != null && thisUser != this)
@@ -17,18 +24,30 @@ public class CurrentUser : MonoBehaviour
             thisUser = this;
         }
         user = new User();
-        DontDestroyOnLoad(gameObject);
-    }
 
-    void Start()
-    {
         GetFromPlayerPrefs();
+        DontDestroyOnLoad(gameObject);
+
+        LoggedIn = IsLoggedIn();
+
     }
 
-    
-    void GetFromPlayerPrefs()
+    public void SetPlayerPrefs(User user)
     {
-        
+        PlayerPrefs.SetString("email", user.email);
+        PlayerPrefs.SetString("password", user.password);
+        PlayerPrefs.SetInt("LoggedIn", 1);
+    }
+    
+    public void GetFromPlayerPrefs()
+    {
+        user.email = PlayerPrefs.GetString("email");
+        user.password = PlayerPrefs.GetString("password");
+    }
+
+    public bool IsLoggedIn()
+    {
+        return (PlayerPrefs.GetInt("LoggedIn") == 1 ? true : false);
     }
 
 }
