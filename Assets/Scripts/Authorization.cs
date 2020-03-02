@@ -8,11 +8,13 @@ public class Authorization : MonoBehaviour
     private void Awake()
     {
         auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
-        user = CurrentUser.thisUser;
+        
     }
+
     void Start()
     {
         CheckFireBase();
+        user = CurrentUser.thisUser;
         if (user.IsLoggedIn())
         {
             Login();
