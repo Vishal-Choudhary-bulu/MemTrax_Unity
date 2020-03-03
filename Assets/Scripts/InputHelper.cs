@@ -46,18 +46,18 @@ public class InputHelper : MonoBehaviour
     public void UpdatePassword()
     {
         password = passField.text;
-        CurrentUser.thisUser.user.password = password; 
+        CurrentUser.thisUser.current.password = password; 
     }
 
     public void UpdateEmail()
     {
         email = emailField.text;
-        CurrentUser.thisUser.user.email = email;
+        CurrentUser.thisUser.current.email = email;
     }
 
     public void UpdateUserName()
     {
         username = usernameField.text;
-        CurrentUser.thisUser.user.username = username;
+        CurrentUser.thisUser.current.username = username;
     }
 }

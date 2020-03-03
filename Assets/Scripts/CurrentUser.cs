@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
+using Google;
+using Firebase.Auth;
 
 public class CurrentUser : MonoBehaviour
 {
     public static CurrentUser thisUser;
 
-    public User user;
+    public User current;
+
+    private FirebaseAuth authLogOut;
 
     [HideInInspector]
     public bool LoggedIn = false;
@@ -15,6 +19,8 @@ public class CurrentUser : MonoBehaviour
 
     private void Awake()
     {
+        authLogOut = FirebaseAuth.DefaultInstance;
+
         if(thisUser != null && thisUser != this)
         {
             Destroy(this);
@@ -23,7 +29,7 @@ public class CurrentUser : MonoBehaviour
         {
             thisUser = this;
         }
-        user = new User();
+        current = new User();
 
         GetFromPlayerPrefs();
         DontDestroyOnLoad(gameObject);
@@ -41,8 +47,8 @@ public class CurrentUser : MonoBehaviour
     
     public void GetFromPlayerPrefs()
     {
-        user.email = PlayerPrefs.GetString("email");
-        user.password = PlayerPrefs.GetString("password");
+        current.email = PlayerPrefs.GetString("email");
+        current.password = PlayerPrefs.GetString("password");
     }
 
     public bool IsLoggedIn()
@@ -50,4 +56,12 @@ public class CurrentUser : MonoBehaviour
         return (PlayerPrefs.GetInt("LoggedIn") == 1 ? true : false);
     }
 
+    public void LogOut()
+    {
+        authLogOut.SignOut();
+        PlayerPrefs.SetInt("LoggedIn", 0);
+        User newUser = new User();
+        SetPlayerPrefs(newUser);
+        GoogleSignIn.DefaultInstance.SignOut();
+    }
 }

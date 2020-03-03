@@ -10,6 +10,8 @@ public class AppEvents : MonoBehaviour
     private void Awake()
     {
         current = this;
+
+        DontDestroyOnLoad(this);
     }
 
     public event Action onUserLogin;

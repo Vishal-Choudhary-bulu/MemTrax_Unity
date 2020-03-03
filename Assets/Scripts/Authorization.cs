@@ -1,14 +1,32 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.Threading.Tasks;
+using Firebase;
+using Firebase.Auth;
+using Google;
 
 public class Authorization : MonoBehaviour
 {
-    private Firebase.Auth.FirebaseAuth auth;
+
+    public string webClientId = "Client ID here";
+
+
+    private FirebaseAuth auth;
+
+    private GoogleSignInConfiguration configuration;
 
     private CurrentUser user;
     private void Awake()
     {
-        auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
-        
+        auth = FirebaseAuth.DefaultInstance;
+        configuration = new GoogleSignInConfiguration
+        {
+            WebClientId = webClientId,
+            RequestEmail = true,
+            RequestIdToken = true
+        };
     }
 
     void Start()
@@ -26,8 +44,8 @@ public class Authorization : MonoBehaviour
 
     public void Login()
     {
-        string email = user.user.email;
-        string password = user.user.password;
+        string email = user.current.email;
+        string password = user.current.password;
         auth.SignInWithEmailAndPasswordAsync(email, password).ContinueWith(task => {
             if (task.IsCanceled)
             {
@@ -40,18 +58,23 @@ public class Authorization : MonoBehaviour
                 return;
             }
 
-            Firebase.Auth.FirebaseUser newUser = task.Result;
-            
+            FirebaseUser newUser = task.Result;
+
+            user.current.username = task.Result.DisplayName;
+            user.current.email = task.Result.Email;
             Debug.LogFormat("User signed in successfully: {0} ({1})",
                 newUser.DisplayName, newUser.UserId);
+            
         });
+
+        AppEvents.current.UserLogin();
     }
 
     public void SignUp()
     {
-        string email = user.user.email;
-        string password = user.user.password;
-        string username = user.user.username;
+        string email = user.current.email;
+        string password = user.current.password;
+        string username = user.current.username;
         auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWith(task => {
             if (task.IsCanceled)
             {
@@ -65,13 +88,15 @@ public class Authorization : MonoBehaviour
             }
 
             // Firebase user has been created.
-            Firebase.Auth.FirebaseUser newUser = task.Result;
+            FirebaseUser newUser = task.Result;
 
             UpdateUserProfile();
-            user.SetPlayerPrefs(CurrentUser.thisUser.user);
+            user.SetPlayerPrefs(CurrentUser.thisUser.current);
             Debug.LogFormat("Firebase user created successfully: {0} ({1})",
                 newUser.DisplayName, newUser.UserId);
+            
         });
+        AppEvents.current.UserLogin();
     }
     #endregion
 
@@ -79,12 +104,12 @@ public class Authorization : MonoBehaviour
 
     private void UpdateUserProfile()
     {
-        string username = CurrentUser.thisUser.user.username;
+        string username = CurrentUser.thisUser.current.username;
 
-        Firebase.Auth.FirebaseUser user = auth.CurrentUser;
+        FirebaseUser user = auth.CurrentUser;
         if (user != null)
         {
-            Firebase.Auth.UserProfile profile = new Firebase.Auth.UserProfile
+            UserProfile profile = new UserProfile
             {
                 DisplayName = username
             };
@@ -107,13 +132,13 @@ public class Authorization : MonoBehaviour
         }
     }
 
-
     public void SignOut()
     {
         auth.SignOut();
         PlayerPrefs.SetInt("LoggedIn",0);
         User newUser = new User();
         user.SetPlayerPrefs(newUser);
+        AppEvents.current.UserLogout();
     }
 
 
@@ -141,6 +166,64 @@ public class Authorization : MonoBehaviour
         return false;
     }
 
+
+    #endregion
+
+    #region Google Auth
+    public void SignInGoogle()
+    {
+        GoogleSignIn.Configuration = configuration;
+        GoogleSignIn.Configuration.UseGameSignIn = false;
+        GoogleSignIn.Configuration.RequestIdToken = true;
+
+        GoogleSignIn.DefaultInstance.SignIn().ContinueWith(OnAuthenticationFinished);
+    }
+
+    internal void OnAuthenticationFinished(Task<GoogleSignInUser> task)
+    {
+        if (task.IsFaulted)
+        {
+            Debug.LogError("Failed to SignIn");
+        }
+        else if (task.IsCanceled)
+        {
+            Debug.Log("Cancelled login");
+        }
+        else
+        {
+            SignInWithGoogleOnFirebase(task.Result.IdToken);
+        }
+    }
+
+    private void SignInWithGoogleOnFirebase(string idToken)
+    {
+        Credential credential = GoogleAuthProvider.GetCredential(idToken, null);
+
+        auth.SignInWithCredentialAsync(credential).ContinueWith(task =>
+        {
+            AggregateException ex = task.Exception;
+            if (ex != null)
+            {
+                if (ex.InnerExceptions[0] is FirebaseException inner && (inner.ErrorCode != 0))
+                    Debug.LogError("Failed to signin to firebase");
+            }
+            else
+            {
+                Debug.Log("Signed In" + task.Result.DisplayName);
+                user.current.username = task.Result.DisplayName;
+                user.current.email = task.Result.Email;
+                AppEvents.current.UserLogin();
+            }
+        });
+
+        
+    }
+
+    public void OnSignOut()
+    {
+        GoogleSignIn.DefaultInstance.SignOut();
+        SignOut();
+    }
 
     #endregion
 
