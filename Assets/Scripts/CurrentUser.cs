@@ -13,9 +13,6 @@ public class CurrentUser : MonoBehaviour
     [HideInInspector]
     public bool LoggedIn = false;
 
-    public GameObject loginPanel;
-    public GameObject signupPanel;
-
 
     private void Awake()
     {
@@ -32,7 +29,6 @@ public class CurrentUser : MonoBehaviour
         current = new User();
 
         GetFromPlayerPrefs();
-        DontDestroyOnLoad(gameObject);
 
         LoggedIn = IsLoggedIn();
 

@@ -18,9 +18,13 @@ public class Authorization : MonoBehaviour
     private GoogleSignInConfiguration configuration;
 
     private CurrentUser user;
+
+    private static FirebaseUser fireUser;
     private void Awake()
     {
         auth = FirebaseAuth.DefaultInstance;
+        auth.StateChanged += AuthStateChanged;
+        //AuthStateChanged(this, null);
         configuration = new GoogleSignInConfiguration
         {
             WebClientId = webClientId,
@@ -33,10 +37,35 @@ public class Authorization : MonoBehaviour
     {
         CheckFireBase();
         user = CurrentUser.thisUser;
+        SignOut();
         if (user.IsLoggedIn())
         {
-            Login();
+            //Login();
         }
+    }
+
+    void AuthStateChanged(object sender, System.EventArgs eventArgs)
+    {
+        if (auth.CurrentUser != fireUser)
+        {
+            bool signedIn = (fireUser != auth.CurrentUser)&& (auth.CurrentUser != null);
+
+            if (!signedIn && user != null)
+            {
+                AppEvents.RaiseUserLogout();
+            }
+            fireUser = auth.CurrentUser;
+            if (signedIn)
+            {
+                AppEvents.RaiseUserLogin();
+            }
+        }
+    }
+
+    void OnDestroy()
+    {
+        auth.StateChanged -= AuthStateChanged;
+        auth = null;
     }
 
 
@@ -64,10 +93,7 @@ public class Authorization : MonoBehaviour
             user.current.email = task.Result.Email;
             Debug.LogFormat("User signed in successfully: {0} ({1})",
                 newUser.DisplayName, newUser.UserId);
-            
         });
-
-        AppEvents.current.UserLogin();
     }
 
     public void SignUp()
@@ -75,6 +101,7 @@ public class Authorization : MonoBehaviour
         string email = user.current.email;
         string password = user.current.password;
         string username = user.current.username;
+
         auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWith(task => {
             if (task.IsCanceled)
             {
@@ -94,10 +121,10 @@ public class Authorization : MonoBehaviour
             user.SetPlayerPrefs(CurrentUser.thisUser.current);
             Debug.LogFormat("Firebase user created successfully: {0} ({1})",
                 newUser.DisplayName, newUser.UserId);
-            
         });
-        AppEvents.current.UserLogin();
+        
     }
+
     #endregion
 
     #region Update profile and others
@@ -138,7 +165,6 @@ public class Authorization : MonoBehaviour
         PlayerPrefs.SetInt("LoggedIn",0);
         User newUser = new User();
         user.SetPlayerPrefs(newUser);
-        AppEvents.current.UserLogout();
     }
 
 
@@ -157,7 +183,7 @@ public class Authorization : MonoBehaviour
             }
             else
             {
-                UnityEngine.Debug.LogError(System.String.Format(
+                Debug.LogError(string.Format(
                   "Could not resolve all Firebase dependencies: {0}", dependencyStatus));
                 // Firebase Unity SDK is not safe to use here.  
             }
@@ -212,7 +238,6 @@ public class Authorization : MonoBehaviour
                 Debug.Log("Signed In" + task.Result.DisplayName);
                 user.current.username = task.Result.DisplayName;
                 user.current.email = task.Result.Email;
-                AppEvents.current.UserLogin();
             }
         });
 

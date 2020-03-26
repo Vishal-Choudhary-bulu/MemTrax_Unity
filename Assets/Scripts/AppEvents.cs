@@ -2,29 +2,47 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Firebase.Auth;
 
 public class AppEvents : MonoBehaviour
 {
     public static AppEvents current;
 
+    public static FirebaseUser appUser;
+
     private void Awake()
     {
         current = this;
-
-        DontDestroyOnLoad(this);
     }
 
-    public event Action onUserLogin;
-    public event Action onUserLogout;
+    //To handle login
+    public delegate void LoginHandler();
 
-    public void UserLogin()
+    public static event LoginHandler OnUserLogin;
+
+    public static void RaiseUserLogin()
     {
-        onUserLogin?.Invoke();
+        OnUserLogin?.Invoke();
     }
-    
-    public void UserLogout()
+
+    //to handle logout
+    public delegate void LogoutHandler();
+
+    public static event LogoutHandler OnUserLogout;
+
+    public static void RaiseUserLogout()
     {
-        onUserLogout?.Invoke();
+        OnUserLogout?.Invoke();
     }
-    
+
+    //to handle testStart
+    public delegate void TestStartHandler();
+
+    public static event LogoutHandler OnTestStart;
+
+    public static void RaiseTestStart()
+    {
+        OnTestStart?.Invoke();
+    }
+
 }
