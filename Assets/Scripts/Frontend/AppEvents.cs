@@ -45,4 +45,14 @@ public class AppEvents : MonoBehaviour
         OnTestStart?.Invoke();
     }
 
+    //to handle testStart
+    public delegate void TestCompleteHandler();
+
+    public static event TestCompleteHandler OnTestComplete;
+
+    public static void RaiseTestComplete()
+    {
+        OnTestComplete?.Invoke();
+    }
+
 }

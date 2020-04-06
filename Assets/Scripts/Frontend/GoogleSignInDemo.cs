@@ -16,6 +16,7 @@ public class GoogleSignInDemo : MonoBehaviour
 
     private void Awake()
     {
+        configuration = null;
         configuration = new GoogleSignInConfiguration
         {
             WebClientId = webClientId,
